@@ -1,0 +1,27 @@
+server:
+  port: 8080
+#  ssl:
+#    key-store: classpath:keystore.p12
+#    key-store-password: 123456
+#    key-store-type: PKCS12
+#    key-alias: myalias
+
+openApi:
+  appId:
+  secret:
+openai:
+  secret_key:
+volc:
+  secret_key:
+  access_key:
+  ep_id:
+spark:
+  secret_key:
+  api_key:
+hunyuan:
+  secret_id:
+  secret_key:
+zhipu:
+  api_key:
+qwen:
+  api_key:
