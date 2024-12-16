@@ -55,8 +55,10 @@ public class ChatServiceProxy<T> {
     public String chat(String message) {
 
         try {
+            log.info("Received chat message: {} ", message);
             beforeChat(createUserMessage(message));
             String answer = realService.chat(messages);
+            log.info("Answered chat message: {} ", answer);
             afterChat(createAssistantMessage(answer));
             return answer;
         } catch (Exception e) {
