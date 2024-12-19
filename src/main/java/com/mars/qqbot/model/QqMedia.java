@@ -1,6 +1,6 @@
 package com.mars.qqbot.model;
 
-import com.mars.model.Media;
+import com.mars.foundation.model.Media;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

@@ -1,6 +1,6 @@
 package com.mars.qqbot;
 
-import com.mars.config.QqBotConfig;
+import com.mars.foundation.config.QqBotConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;

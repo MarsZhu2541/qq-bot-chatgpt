@@ -36,7 +36,7 @@ public class ZhiPuServiceImpl implements ChatGPTService<ChatMessage> {
         String requestId = "mars-" + System.currentTimeMillis();
 
         ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest.builder()
-                .model(Constants.ModelChatGLM4)
+                .model("GLM-4-Flash")
                 .stream(Boolean.FALSE)
                 .invokeMethod(Constants.invokeMethod)
                 .messages(messages)

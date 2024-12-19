@@ -1,7 +1,7 @@
 package com.mars.qqbot.service.impl;
 
-import com.mars.model.Media;
-import com.mars.model.MediaType;
+import com.mars.foundation.model.Media;
+import com.mars.foundation.model.MediaType;
 import com.mars.qqbot.model.QqMedia;
 import com.mars.qqbot.service.Text2MediaService;
 import lombok.extern.slf4j.Slf4j;

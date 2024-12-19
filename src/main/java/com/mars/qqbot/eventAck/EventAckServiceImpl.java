@@ -1,14 +1,15 @@
 package com.mars.qqbot.eventAck;
 
-import com.mars.exception.QqBotException;
-import com.mars.model.*;
+import com.mars.foundation.exception.QqBotException;
+import com.mars.foundation.model.QqWebhookEvent;
+import com.mars.foundation.model.*;
 import com.mars.qqbot.model.QqMedia;
 import com.mars.qqbot.service.Text2MediaService;
 import com.mars.qqbot.service.impl.*;
 import com.mars.qqbot.util.ChatServiceProxy;
-import com.mars.service.EventAckService;
-import com.mars.service.QqOpenApiService;
-import com.mars.util.RepeatPushHelper;
+import com.mars.foundation.service.EventAckService;
+import com.mars.foundation.service.QqOpenApiService;
+import com.mars.foundation.util.RepeatPushHelper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 @Slf4j
 public class EventAckServiceImpl implements EventAckService {
 
+    public static final String IMAGE_HANDLING = "图像处理中，很快就好 ⌯ᵔ⤙ᵔ⌯ಣ";
     @Autowired
     private VolcEngineServiceImpl volcEngineService;
 
@@ -58,6 +60,7 @@ public class EventAckServiceImpl implements EventAckService {
         chatServiceProxyMap.put("/智谱对话", new ChatServiceProxy<>(zhiPuService));
         chatServiceProxyMap.put("/通义千问对话", new ChatServiceProxy<>(qwenService));
         text2MediaServiceHashMap.put("/百度搜图", baiduImageService);
+        text2MediaServiceHashMap.put("/豆包文生图", volcEngineService);
     }
 
     @SneakyThrows
@@ -106,12 +109,20 @@ public class EventAckServiceImpl implements EventAckService {
             return builder;
         }
 
-        // need text to media
+        Thread thread = new Thread(() -> {
+            sendMediaMessage(groupId, msg, builder);
+        });
+        thread.start();
+        builder.content(IMAGE_HANDLING);
+        return builder;
+    }
+
+    private void sendMediaMessage(String groupId, String msg, Message.MessageBuilder builder) {
         QqMedia media = text2MediaServiceHashMap.get(currentMode).getMedia(msg);
         ResponseEntity<UploadedMedia> uploadedMedia = qqOpenApiService.uploadMedia(groupId, media.getMedia());
         log.info("upload file successfully, {}", media.getTitle());
-
         builder.msgType(MessageType.MEDIA).media(uploadedMedia.getBody()).content(media.getTitle());
-        return builder;
+        builder.msgSeq(2);
+        qqOpenApiService.sendGroupMessage(groupId, builder.build());
     }
 }

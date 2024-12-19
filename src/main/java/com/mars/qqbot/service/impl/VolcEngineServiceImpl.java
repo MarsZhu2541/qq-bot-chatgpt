@@ -1,7 +1,15 @@
 package com.mars.qqbot.service.impl;
 
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
+import com.mars.foundation.model.Media;
+import com.mars.foundation.model.MediaType;
+import com.mars.qqbot.model.QqMedia;
+import com.mars.qqbot.model.volc.CvProcess;
+import com.mars.qqbot.model.volc.Data;
 import com.mars.qqbot.service.ChatGPTService;
+import com.mars.qqbot.service.Text2MediaService;
 import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionRequest;
 import com.volcengine.ark.runtime.model.completion.chat.ChatMessage;
 import com.volcengine.ark.runtime.model.completion.chat.ChatMessageRole;
@@ -11,12 +19,13 @@ import com.volcengine.service.visual.impl.VisualServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 
 @Service
 @Slf4j
-public class VolcEngineServiceImpl implements ChatGPTService<ChatMessage> {
+public class VolcEngineServiceImpl implements ChatGPTService<ChatMessage>, Text2MediaService {
     IVisualService visualService = VisualServiceImpl.getInstance();
     ArkService service;
     ChatCompletionRequest chatCompletionRequest;
@@ -58,5 +67,26 @@ public class VolcEngineServiceImpl implements ChatGPTService<ChatMessage> {
     @Override
     public boolean isUserMessage(ChatMessage message) {
         return (ChatMessageRole.USER.equals(message.getRole()));
+    }
+
+    @Override
+    public QqMedia getMedia(String msg) {
+        JSONObject req = new JSONObject();
+        req.put("req_key", "high_aes_general_v20_L");
+        req.put("prompt", msg);
+        req.put("model_version", "general_v2.0_L");
+        req.put("return_url", true);
+        String jsonString = "";
+        Data data =null;
+        try {
+            jsonString = JSON.toJSONString(visualService.cvProcess(req));
+            CvProcess cvProcess = JSON.parseObject(jsonString, CvProcess.class);
+            data = cvProcess.getData();
+            return new QqMedia(new Media(MediaType.IMAGE, data.getImage_urls().get(0), false),
+                    data.getLlm_result());
+        } catch (Exception e) {
+            log.info(jsonString);
+            return new QqMedia(new Media(MediaType.IMAGE, data.getImage_urls().get(0), false), " ");
+        }
     }
 }
