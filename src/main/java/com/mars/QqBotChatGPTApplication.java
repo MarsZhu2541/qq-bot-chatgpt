@@ -1,4 +1,4 @@
-package com.mars.qqbot;
+package com.mars;
 
 import com.mars.foundation.config.QqBotConfig;
 import org.springframework.boot.SpringApplication;

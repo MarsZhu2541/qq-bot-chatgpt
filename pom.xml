@@ -40,7 +40,12 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.mars.foundation</groupId>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.18.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.marszhu2541</groupId>
             <artifactId>foundation-qq-bot</artifactId>
             <version>1.0.0</version>
         </dependency>
