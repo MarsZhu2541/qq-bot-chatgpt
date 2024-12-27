@@ -1,9 +1,6 @@
 package com.mars.novel.service;
 
-import com.mars.novel.model.Book;
-import com.mars.novel.model.Chapter;
-import com.mars.novel.model.ConfigBean;
-import com.mars.novel.model.SearchResult;
+import com.mars.novel.model.*;
 import com.mars.novel.parse.BookParser;
 import com.mars.novel.parse.CatalogParser;
 import com.mars.novel.parse.ChapterParser;
@@ -12,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,6 +29,8 @@ public class NovelServiceImpl {
     private List<SearchResult> searchResults = Collections.emptyList();
     private List<Chapter> catalog = Collections.emptyList();
     private Book book = null;
+
+    public static List<Rule> rules = Rule.initRules();
 
 
     public NovelServiceImpl(ConfigBean config) {

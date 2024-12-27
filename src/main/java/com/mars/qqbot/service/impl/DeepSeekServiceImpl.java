@@ -1,27 +1,26 @@
 package com.mars.qqbot.service.impl;
 
+import java.util.List;
+
 import com.mars.qqbot.service.ChatGPTService;
 import com.plexpt.chatgpt.ChatGPT;
 import com.plexpt.chatgpt.entity.chat.ChatCompletion;
 import com.plexpt.chatgpt.entity.chat.ChatCompletionResponse;
 import com.plexpt.chatgpt.entity.chat.Message;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
-
 @Service
-public class ChatGPTServiceImpl implements ChatGPTService<Message> {
+public class DeepSeekServiceImpl implements ChatGPTService<Message> {
 
     ChatGPT chatGPT;
 
-    public ChatGPTServiceImpl(@Value("${openai.secret_key}") List<String> token) {
+    public DeepSeekServiceImpl(@Value("${deepseek.secret_key}") List<String> token) {
         chatGPT = ChatGPT.builder()
-//                .proxy(Proxys.http(proxyIp, proxyPort))
                 .apiKeyList(token)
                 .timeout(900)
-                .apiHost("https://api.chatanywhere.tech/") //反向代理地址
+                .apiHost("https://api.deepseek.com/") //反向代理地址
                 .build()
                 .init();
     }
@@ -30,7 +29,7 @@ public class ChatGPTServiceImpl implements ChatGPTService<Message> {
     @Override
     public String chat(List<Message> messages) {
         ChatCompletion chatCompletion = ChatCompletion.builder()
-                .model(ChatCompletion.Model.GPT_3_5_TURBO)
+                .model("deepseek-reasoner")
                 .messages(messages)
                 .temperature(0.9)
                 .build();

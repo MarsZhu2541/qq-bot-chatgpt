@@ -13,6 +13,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Map;
 
 /**
  * @author pcdd
@@ -72,10 +74,12 @@ public class ChapterParser extends Source {
         StringBuilder sb = new StringBuilder();
 
         do {
+            Map<String, String> cookies = CrawlUtils.buildCookies(this.rule.getSearch().getCookies());
+            cookies.put("Hm_lpvt_07f72e367b2a5dc91d07af6c1ccc52ef", String.valueOf(Instant.now().getEpochSecond()));
             Document document = Jsoup.connect(nextUrl)
                     .timeout(TIMEOUT_MILLS)
                     .header("User-Agent", RandomUA.generate())
-                    .cookies(CrawlUtils.buildCookies(this.rule.getSearch().getCookies()))
+                    .cookies(cookies)
                     .referrer(referrer)
                     .get();
             Elements elContent = document.select(this.rule.getChapter().getContent());

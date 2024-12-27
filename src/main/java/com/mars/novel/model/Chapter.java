@@ -24,9 +24,11 @@ public class Chapter {
 
     public List<String> getContentMessages() {
         List<String> messages = new ArrayList<>();
+        log.info("Before filter: {}", content);
         content = content.replace("www.", "")
                 .replace(".com", "").replace(".net", "")
-                .replace(".info","").replace(".la","");
+                .replace(".info", "").replace(".la", "").replace(".","");
+        log.info("After filter: {}", content);
         int length = content.length();
         log.info(title + " 字数： " + length);
         int start = 0;

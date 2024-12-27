@@ -47,23 +47,32 @@
         <dependency>
             <groupId>io.github.marszhu2541</groupId>
             <artifactId>foundation-qq-bot</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.github.plexpt</groupId>
             <artifactId>chatgpt</artifactId>
-            <version>4.3.0</version>
+            <version>5.1.1</version>
         </dependency>
         <dependency>
             <groupId>com.volcengine</groupId>
             <artifactId>volc-sdk-java</artifactId>
-            <version>1.0.197</version>
+            <version>1.0.214</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>junit</artifactId>
+                    <groupId>junit</groupId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>javax.annotation</groupId>
@@ -73,7 +82,7 @@
         <dependency>
             <groupId>com.volcengine</groupId>
             <artifactId>volcengine-java-sdk-ark-runtime</artifactId>
-            <version>0.1.115</version>
+            <version>0.2.12</version>
         </dependency>
         <dependency>
             <groupId>com.tencentcloudapi</groupId>

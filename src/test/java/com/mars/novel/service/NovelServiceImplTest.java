@@ -1,9 +1,6 @@
 package com.mars.novel.service;
 
-import com.mars.novel.model.Book;
-import com.mars.novel.model.Chapter;
-import com.mars.novel.model.ConfigBean;
-import com.mars.novel.model.SearchResult;
+import com.mars.novel.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -18,8 +15,8 @@ class NovelServiceImplTest {
 
     @Test
     void searchTest() {
-
-         novelServiceImpl.searchBooks("魔女，火球与蒸汽邪神");
+        log.info(Rule.initRules().get(3).getName());
+        novelServiceImpl.searchBooks("魔女，火球与蒸汽邪神");
         Book bookDetail = novelServiceImpl.getBookDetail(0);
         log.info("bookDetail: {}", bookDetail.toString());
         log.info("getCatalogMessages: {}", bookDetail.getCatalogMessages().toString());

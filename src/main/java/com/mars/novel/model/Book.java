@@ -46,4 +46,14 @@ public class Book {
         }
         return catalogMessages;
     }
+
+    public String getLatestCatalog() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 1; i <= Math.min(catalog.size(), 20); i++) {
+            Chapter r = catalog.get(catalog.size() - i);
+            stringBuilder.append(catalog.size() - i + 1).append(": ").append(r.getTitle()).append("\n");
+        }
+        String format = String.format("\n" + bookName + " 章节目录(%d-%d):\n", catalog.size(), Math.max(catalog.size() - 19, 1));
+        return format + stringBuilder;
+    }
 }

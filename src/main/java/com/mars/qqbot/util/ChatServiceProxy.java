@@ -22,7 +22,7 @@ public class ChatServiceProxy<T> {
         }
     }
 
-    protected void beforeChat(T message) {
+    protected synchronized void beforeChat(T message) {
         messagesSizeCheck();
         if(!messages.isEmpty()){
             waitLastChatFinished();
@@ -34,6 +34,10 @@ public class ChatServiceProxy<T> {
         while (realService.isUserMessage(messages.get(messages.size() - 1))) {
             try {
                 Thread.sleep(2000);
+                if(messages.isEmpty()){
+                    // last chat was failed, messages was cleared
+                    break;
+                }
             } catch (InterruptedException e) {
                 return;
             }

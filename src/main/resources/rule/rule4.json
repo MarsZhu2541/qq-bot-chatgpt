@@ -8,7 +8,7 @@
     "url": "http://www.99xs.info/read/search/",
     "method": "post",
     "body": "{'kw': 'searchkey'}",
-    "cookies": "{'Hm_lvt_07f72e367b2a5dc91d07af6c1ccc52ef':'1735277298', 'HMACCOUNT':'79811DB89CB591D6', 'Hm_lpvt_07f72e367b2a5dc91d07af6c1ccc52ef':'1735277306'}",
+    "cookies": "{'Hm_lvt_07f72e367b2a5dc91d07af6c1ccc52ef':'1735277298', 'HMACCOUNT':'79811DB89CB591D6', 'Hm_lpvt_07f72e367b2a5dc91d07af6c1ccc52ef':'1735282118'}",
     "pagination": false,
     "result": "div.wrap > div > div > div",
     "bookName": "div.bookinfo > h4 > a",
