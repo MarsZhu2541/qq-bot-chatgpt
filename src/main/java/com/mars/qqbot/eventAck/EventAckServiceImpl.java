@@ -68,7 +68,7 @@ public class EventAckServiceImpl implements EventAckService {
     private HashMap<String, Text2MediaService> text2MediaServiceHashMap = new HashMap<>();
     private List<String> novelCommand = List.of("/查看书源", "/切换书源", "/小说搜索", "/选择小说", "/选择章节");
 
-    private RepeatPushHelper repeatPushHelper = new RepeatPushHelper(10);
+    private static RepeatPushHelper repeatPushHelper = new RepeatPushHelper(10);
 
     private String currentMode = "/讯飞星火对话";
 
@@ -98,7 +98,7 @@ public class EventAckServiceImpl implements EventAckService {
         if (repeatPushHelper.isRepeat(event.getId())) {
 
             while (repeatPushHelper.isInProgress(event.getId())) {
-                if (count >= 60) {
+                if (count >= 120) {
                     count = 0;
                     break;
                 }
