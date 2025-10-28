@@ -1,5 +1,7 @@
 package com.mars.qqbot.eventAck;
 
+import com.mars.deltaforce.model.MapPassword;
+import com.mars.deltaforce.service.DeltaForceService;
 import com.mars.foundation.exception.QqBotException;
 import com.mars.foundation.model.QqWebhookEvent;
 import com.mars.foundation.model.*;
@@ -29,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.mars.deltaforce.service.DeltaForceService.NOT_FOUND;
 
 @Service
 @Slf4j
@@ -63,6 +67,9 @@ public class EventAckServiceImpl implements EventAckService {
 
     @Autowired
     private NovelServiceImpl novelService;
+
+    @Autowired
+    private DeltaForceService deltaForceService;
 
     private HashMap<String, ChatServiceProxy<?>> chatServiceProxyMap = new HashMap<>();
     private HashMap<String, Text2MediaService> text2MediaServiceHashMap = new HashMap<>();
@@ -154,6 +161,16 @@ public class EventAckServiceImpl implements EventAckService {
         else if (chatServiceProxyMap.containsKey(msg.trim()) || text2MediaServiceHashMap.containsKey(msg.trim())) {
             currentMode = msg.trim();
             content = "已切换到" + currentMode.replace("/", "") + "模式";
+        }
+        else if(msg.trim().contains("/三角洲今日密码")){
+            content = deltaForceService.getMapPassword().toString();
+        }else if(msg.trim().contains("/三角洲实时价格")){
+            Matcher searchMatcher = Pattern.compile("/三角洲实时价格\\s*(.*)").matcher(msg);
+            if (searchMatcher.find()) {
+                content = deltaForceService.searchPossibleItemPrice(searchMatcher.group(1));
+            }else {
+                content = NOT_FOUND;
+            }
         }
         // need text to text
         else if (chatServiceProxyMap.containsKey(currentMode)) {

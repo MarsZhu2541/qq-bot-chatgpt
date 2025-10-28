@@ -25,3 +25,17 @@ zhipu:
   api_key:
 qwen:
   api_key:
+deepseek:
+  secret_key:
+novel:
+  sourceId: 0
+  extName: txt
+  minInterval: 100
+  maxInterval: 300
+  threads: -1
+    # 最大重试次数 (针对首次下载失败的章节)
+  maxRetryAttempts: 3
+    # 重试爬取最小间隔 (毫秒)
+  retryMinInterval: 500
+    # 重试爬取最大间隔 (毫秒)
+  retryMaxInterval: 2000
