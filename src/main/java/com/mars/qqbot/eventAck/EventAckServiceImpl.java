@@ -1,5 +1,6 @@
 package com.mars.qqbot.eventAck;
 
+import com.mars.deltaforce.exception.PlayerNotLogin;
 import com.mars.deltaforce.model.MapPassword;
 import com.mars.deltaforce.service.DeltaForceService;
 import com.mars.foundation.exception.QqBotException;
@@ -29,6 +30,7 @@ import javax.annotation.PostConstruct;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,7 +79,7 @@ public class EventAckServiceImpl implements EventAckService {
 
     private static RepeatPushHelper repeatPushHelper = new RepeatPushHelper(10);
 
-    private String currentMode = "/讯飞星火对话";
+    private String currentMode = "/豆包对话";
 
     private final ThreadLocal<Message.MessageBuilder> builder = new ThreadLocal<>();
 
@@ -105,13 +107,8 @@ public class EventAckServiceImpl implements EventAckService {
         if (repeatPushHelper.isRepeat(event.getId())) {
 
             while (repeatPushHelper.isInProgress(event.getId())) {
-                if (count >= 120) {
-                    count = 0;
-                    break;
-                }
                 log.info("Message {} is in progress, need wait", event.getContent());
-                Thread.sleep(1000);
-                count++;
+                TimeUnit.SECONDS.sleep(5);
             }
             //will become to done or error
             if (repeatPushHelper.isDone(event.getId())) {
@@ -121,12 +118,12 @@ public class EventAckServiceImpl implements EventAckService {
             //error should try again
         }
         builder.set(new Message.MessageBuilder().msgSeq(seqStart++).eventId(webhookEvent.getId())
-                                                .msgId(event.getId()).msgType(MessageType.TEXT));
+                .msgId(event.getId()).msgType(MessageType.TEXT));
         repeatPushHelper.put(event.getId(), HandlingState.IN_PROGRESS);
         try {
             switch (webhookEvent.getT()) {
                 case GROUP_AT_MESSAGE_CREATE:
-                    handleMessageBuilder(event.getGroup_openid(), event.getContent());
+                    handleMessageBuilder(event);
             }
             qqOpenApiService.sendGroupMessage(event.getGroup_openid(), builder.get().build());
             repeatPushHelper.put(event.getId(), HandlingState.DONE);
@@ -147,28 +144,57 @@ public class EventAckServiceImpl implements EventAckService {
         }
     }
 
+    private void handleMessageBuilder(Event event) {
+        String groupId = event.getGroup_openid();
+        String msg = event.getContent();
+        String authorId = event.getAuthor().getMember_openid();
+        try {
+            if (msg.trim().contains("/三角洲玩家信息")) {
+                QqMedia playerData = deltaForceService.getPlayerData(groupId, authorId, builder.get());
+                ResponseEntity<UploadedMedia> uploadedMedia = qqOpenApiService.uploadMedia(groupId, playerData.getMedia());
+                builder.get().msgType(MessageType.MEDIA).media(uploadedMedia.getBody()).
+                        content(playerData.getTitle());
+            } else if (msg.trim().contains("/三角洲玩家成就")) {
+                String achievement = deltaForceService.getAchievement(authorId);
+                log.info("achievement: {}", achievement);
+                builder.get().msgType(MessageType.TEXT).media(null).content(achievement);
+            } else {
+                handleMessageBuilder(groupId, msg);
+            }
+        } catch (PlayerNotLogin e) {
+            QqMedia qrCode = deltaForceService.getLoginQrCode(groupId, authorId, builder.get());
+            ResponseEntity<UploadedMedia> uploadedMedia = qqOpenApiService.uploadMedia(groupId, qrCode.getMedia());
+            builder.get().msgType(MessageType.MEDIA).media(uploadedMedia.getBody()).
+                    content(qrCode.getTitle());
+        } catch (RuntimeException e) {
+            log.error("Unexpected error", e);
+            builder.get().msgType(MessageType.TEXT).media(null)
+                    .content(e.getMessage().replace(".", " "));
+        }
+    }
+
     private void handleMessageBuilder(String groupId, String msg) {
 
         String content;
         if (msg.isBlank()) {
             content = EMPTY_MESSAGE;
         } else if (novelCommand.stream().anyMatch(msg.trim()::contains)) {
-            content = handleNovelRequest(groupId, msg.trim()).replace(".", "_");;
-        }else if(msg.trim().contains("/开关深度思考")){
+            content = handleNovelRequest(groupId, msg.trim()).replace(".", "_");
+            ;
+        } else if (msg.trim().contains("/开关深度思考")) {
             content = volcEngineService.swichThinking();
         }
         // need change mode
         else if (chatServiceProxyMap.containsKey(msg.trim()) || text2MediaServiceHashMap.containsKey(msg.trim())) {
             currentMode = msg.trim();
             content = "已切换到" + currentMode.replace("/", "") + "模式";
-        }
-        else if(msg.trim().contains("/三角洲今日密码")){
+        } else if (msg.trim().contains("/三角洲今日密码")) {
             content = deltaForceService.getMapPassword().toString();
-        }else if(msg.trim().contains("/三角洲实时价格")){
+        } else if (msg.trim().contains("/三角洲实时价格")) {
             Matcher searchMatcher = Pattern.compile("/三角洲实时价格\\s*(.*)").matcher(msg);
             if (searchMatcher.find()) {
                 content = deltaForceService.searchPossibleItemPrice(searchMatcher.group(1));
-            }else {
+            } else {
                 content = NOT_FOUND;
             }
         }
@@ -178,7 +204,8 @@ public class EventAckServiceImpl implements EventAckService {
         }
         // need text to image
         else {
-            sendMediaMessage(groupId, msg, builder.get());
+            QqMedia media = text2MediaServiceHashMap.get(currentMode).getMedia(msg);
+            sendMediaMessage(media, groupId, builder.get(), seqStart);
             content = IMAGE_HANDLING;
         }
         log.info("Ready to send content: {}", content);
@@ -228,16 +255,16 @@ public class EventAckServiceImpl implements EventAckService {
         return "你进入了未知领域";
     }
 
-    private void sendMediaMessage(String groupId, String msg, Message.MessageBuilder messageBuilder) {
+    private void sendMediaMessage(QqMedia media, String groupId, Message.MessageBuilder messageBuilder, int seqStart) {
         new Thread(() -> {
+            int seqStart1 = seqStart;
             try {
-                messageBuilder.msgSeq(11);
-                QqMedia media = text2MediaServiceHashMap.get(currentMode).getMedia(msg);
+                messageBuilder.msgSeq(seqStart1++);
                 ResponseEntity<UploadedMedia> uploadedMedia = qqOpenApiService.uploadMedia(groupId, media.getMedia());
                 log.info("upload file successfully, {}", media.getTitle());
                 messageBuilder.msgType(MessageType.MEDIA).media(uploadedMedia.getBody()).content(media.getTitle());
             } catch (RuntimeException e) {
-                messageBuilder.msgSeq(12);
+                messageBuilder.msgSeq(seqStart1++);
                 messageBuilder.media(null).content(
                         "出错了，请联系管理员qq2541884980\n" + e.getLocalizedMessage().replace(".", "_"));
                 log.error("Create message failed", e);
@@ -253,9 +280,9 @@ public class EventAckServiceImpl implements EventAckService {
                 Book book = novelService.getBookDetail(index - 1);
                 messageBuilder.msgSeq(100 + seqStart++);
                 ResponseEntity<UploadedMedia> uploadedMedia = qqOpenApiService.uploadMedia(groupId,
-                                                                                           new Media(MediaType.IMAGE,
-                                                                                                     book.getCoverUrl(),
-                                                                                                     false));
+                        new Media(MediaType.IMAGE,
+                                book.getCoverUrl(),
+                                false));
                 log.info("upload book cover successfully, {}", book.getBookName());
                 messageBuilder.msgType(MessageType.MEDIA).media(uploadedMedia.getBody()).content(book.toString());
                 qqOpenApiService.sendGroupMessage(groupId, messageBuilder.build());
@@ -265,7 +292,7 @@ public class EventAckServiceImpl implements EventAckService {
                 qqOpenApiService.sendGroupMessage(groupId, messageBuilder.build());
             } catch (RuntimeException e) {
                 messageBuilder.msgSeq(100 + seqStart++).media(null).content("出错了，请联系管理员qq2541884980\n")
-                              .msgType(MessageType.TEXT);
+                        .msgType(MessageType.TEXT);
                 log.error("Create message failed", e);
                 qqOpenApiService.sendGroupMessage(groupId, messageBuilder.build());
             }
